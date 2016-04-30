@@ -1,0 +1,79 @@
+
+<!DOCTYPE html> 
+<html>
+<head>
+   <title>VIDEO WITH CANVAS</title> 
+    <!-- Ma JS -->
+    <script> 
+        document.addEventListener('DOMContentLoaded', function() {
+            var v = document.getElementById('v');
+            var canvas = document.getElementById('c');
+            var context = canvas.getContext('2d');
+            var back = document.createElement('canvas');
+            var backcontext = back.getContext('2d');
+
+            var cw, ch;
+            // Khi video duoc play thi thuc hien
+            v.addEventListener('play', function() {
+                cw = v.clientWidth;
+                ch = v.clientHeight;
+                canvas.width = cw;
+                canvas.height = ch;
+                back.width = cw;
+                back.height = ch;
+                draw(v, context, backcontext, cw, ch);
+            }, false);
+        }, false);
+        
+        // Ham ve hieu ung cua moi frame video len canvas
+        function draw(v, c, bc, cw, ch) {
+                if(v.paused || v.ended) 
+                    return false;
+                // ve frame len backing canvas
+                bc.drawImage(v, 0, 0, cw, ch);
+                // lay du lieu cac pixel tu backing canvas
+                var idata = bc.getImageData(0, 0, cw, ch);
+                var data = idata.data;
+                var w = idata.width;
+                var limit = data.length
+                // Lap xu ly cac pixel
+                for(var i = 0; i < limit; i++) {
+                    if( i % 4 == 3 ) continue;
+                    data[i] = 127 + 2 * data[i] - data[i + 4] - data[i + w * 4];
+                }
+				// Ve idata len canvas
+                c.putImageData(idata, 0, 0);
+                //setTimeout(draw, 20, v, c, bc, cw, ch);
+                setTimeout(function(){ draw(v, c, bc, cw, ch)}, 20);
+        }
+    </script>
+    <!-- Ma CSS -->
+    <style>
+         body {
+             background-color: cadetblue;
+
+         }
+         #c {
+             position: absolute;
+             border: 2px solid red;
+             top: 50%;
+             left: 50%;
+             margin: -181px 0 0 156px;
+         }
+
+         #v {
+             position: absolute;
+             top: 50%;
+             left: 50%;
+             margin: -180px 0 0 -500px;
+         }
+    </style> 
+</head>
+    <body>
+       <h3 style="margin: 66px 460px; color: blue">Dream of a prisoner</h3>
+       <video id="v" controls loop>
+       <source src="video.mp4" type="video/mp4"> 
+       </video> 
+       <canvas id="c"></canvas>
+    </body>
+</html>
